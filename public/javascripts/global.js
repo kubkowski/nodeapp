@@ -4,11 +4,12 @@ $(document).ready(function () {
     populateTable();
     $('#userList table tbody').on('click', 'td a.linkshowuser', showUserInfo);
     $('#btnAddUser').on('click', addUser);
+    $('#userList table tbody').on('click', 'td a.linkdeleteuser', deleteUser);
 });
 
 function populateTable () {
   var tableContent = '';
-  $.getJSON('/users/userlist', function (data) {
+  $.getJSON('/users/userlist', function ( data ) {
     userListData = data;
     $.each(data, function () {
       tableContent += '<tr>';
@@ -21,7 +22,7 @@ function populateTable () {
   })
 };
 
-function showUserInfo (event) {
+function showUserInfo ( event ) {
   event.preventDefault();
   var thisUserName = $(this).attr('rel');
   var arrayPosition = userListData.map(function(arrayItem) { return arrayItem.username; }).indexOf(thisUserName);
@@ -32,7 +33,7 @@ function showUserInfo (event) {
   $('#userInfoLocation').text(thisUserObject.location);
 };
 
-function addUser (event) {
+function addUser ( event ) {
   event.preventDefault();
   var errorCount = 0;
   $('#addUser input').each(function ( index, val ) {
@@ -56,12 +57,14 @@ function addUser (event) {
       url: '/users/addUser',
       dataType: 'JSON'
     }).done(function( response ) {
+      
       if (response.msg === '') {
         $('#addUser fieldset input').val('');
         populateTable();
       } else {
         alert('Error: ' + response.msg);
       }
+
     });
 
   } else {
@@ -70,4 +73,31 @@ function addUser (event) {
     return false;
 
   }
+
 };
+
+function deleteUser ( event ) {
+  event.preventDefault();
+  var confirmation = confirm('Are you sure you want to delete this user?');
+
+  if (confirmation === true) {
+
+    $.ajax({
+      type: 'DELETE',
+      url: '/users/deleteuser/' + $(this).attr('rel')
+    }).done(function (response) {
+      
+      if (response.msg !== '') {
+        alert('Error: ' + response.msg);
+      }
+
+      populateTable();
+
+    });
+
+  } else {
+
+    return false;
+
+  }
+}
